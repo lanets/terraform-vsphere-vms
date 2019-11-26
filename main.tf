@@ -123,4 +123,35 @@ resource "vsphere_virtual_machine" "vm" {
       dns_server_list = var.nameservers
     }
   }
+
+  # Upload partition extend script
+  provisioner "file" {
+    source      = "/home/lmaurice/ws/infra/virtualization-infrastructure/terraform/modules/vcenter-vm/scripts/partresize.sh"
+    destination = "/tmp/partresize.sh"
+
+    connection {
+      type     = "ssh"
+      user     = "effenco"
+      password = "effenco"
+      host     = var.networking.interfaces[0].ipv4_address
+    }
+
+  }
+
+  # Extend system partition
+  provisioner "remote-exec" {
+
+    connection {
+      type     = "ssh"
+      user     = "effenco"
+      password = "effenco"
+      host     = var.networking.interfaces[0].ipv4_address
+    }
+
+    inline = [
+      "sudo chmod +x /tmp/partresize.sh",
+      "echo 'y' | sudo /tmp/partresize.sh -p /dev/sda5 -l -f",
+      "sudo reboot now & echo 'Rebooting...' & exit",
+    ]
+  }
 }
