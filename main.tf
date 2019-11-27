@@ -126,13 +126,13 @@ resource "vsphere_virtual_machine" "vm" {
 
   # Upload partition extend script
   provisioner "file" {
-    source      = "/home/lmaurice/ws/infra/virtualization-infrastructure/terraform/modules/vcenter-vm/scripts/partresize.sh"
+    source      = "${path.module}/partresize.sh"
     destination = "/tmp/partresize.sh"
 
     connection {
       type     = "ssh"
-      user     = "effenco"
-      password = "effenco"
+      user     = var.ssh_user
+      password = var.ssh_password
       host     = var.networking.interfaces[0].ipv4_address
     }
 
@@ -143,15 +143,15 @@ resource "vsphere_virtual_machine" "vm" {
 
     connection {
       type     = "ssh"
-      user     = "effenco"
-      password = "effenco"
+      user     = var.ssh_user
+      password = var.ssh_password
       host     = var.networking.interfaces[0].ipv4_address
     }
 
     inline = [
       "sudo chmod +x /tmp/partresize.sh",
       "echo 'y' | sudo /tmp/partresize.sh -p /dev/sda5 -l -f",
-      "sudo reboot now & echo 'Rebooting...' & exit",
+      "sudo shutdown -r",
     ]
   }
 }
