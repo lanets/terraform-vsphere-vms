@@ -53,7 +53,8 @@ locals {
 
 # UPDATE VMs
 resource "vsphere_virtual_machine" "vm" {
-  name                      = var.name
+  count         = var.instance != null ? var.instance : 1
+  name                      = "${var.name}${count.index + 1}"
   resource_pool_id          = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
   annotation                = var.annotation
 
@@ -107,14 +108,14 @@ resource "vsphere_virtual_machine" "vm" {
 
     customize {
       linux_options {
-        host_name = var.hostname != null ? var.hostname : var.name
+        host_name = var.hostname != null ? "${var.hostname}${count.index + 1}": "${var.name}${count.index + 1}"
         domain    = var.domain
       }
       
       dynamic "network_interface" {
         for_each = var.networking.interfaces
         content {
-          ipv4_address = var.networking.interfaces[network_interface.key].ipv4_address
+          ipv4_address = var.networking.interfaces[network_interface.key].ipv4_address[count.index]
           ipv4_netmask = var.networking.interfaces[network_interface.key].ipv4_netmask
         }
       }
@@ -133,7 +134,7 @@ resource "vsphere_virtual_machine" "vm" {
       type     = "ssh"
       user     = var.ssh_user
       password = var.ssh_password
-      host     = var.networking.interfaces[0].ipv4_address
+      host     = var.networking.interfaces[0].ipv4_address[count.index]
     }
 
   }
@@ -145,7 +146,7 @@ resource "vsphere_virtual_machine" "vm" {
       type     = "ssh"
       user     = var.ssh_user
       password = var.ssh_password
-      host     = var.networking.interfaces[0].ipv4_address
+      host     = var.networking.interfaces[0].ipv4_address[count.index]
     }
 
     inline = [
