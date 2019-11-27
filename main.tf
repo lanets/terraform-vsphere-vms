@@ -126,7 +126,7 @@ resource "vsphere_virtual_machine" "vm" {
 
   # Upload partition extend script
   provisioner "file" {
-    source      = "${path.module}/partresize.sh"
+    source      = "${path.module}/scripts/partresize.sh"
     destination = "/tmp/partresize.sh"
 
     connection {
