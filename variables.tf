@@ -37,6 +37,12 @@ variable "instance" {
   default     = null
 }
 
+variable "separated" {
+  description = "Tell if the set of instances needs to be separated accros host"
+  type        = bool
+  default     = false
+}
+
 # RESOURCES VARIABLES
 
 variable "datastore" {
