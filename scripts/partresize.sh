@@ -83,7 +83,7 @@ WantedBy=multi-user.target" > /etc/systemd/system/fsresize.service
   systemctl enable fsresize.service
 }
 
-l=$(sudo lvdisplay | grep 'LV Path' | grep -o '\/[a-z0-9/-]*/root')
+l=$(sudo lvdisplay | grep 'LV Path' | grep -o '\/[a-z0-9/_-]*root')
 p=$(sudo pvdisplay | grep 'PV Name' | grep -o '\/[a-z0-9/-]*')
 
 command -v fdisk >/dev/null 2>&1 && command -v parted >/dev/null 2>&1 && command -v pvresize >/dev/null 2>&1 || {
