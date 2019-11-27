@@ -158,9 +158,9 @@ resource "vsphere_virtual_machine" "vm" {
 }
 
 resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule" {
-  count               = var.separated == true ? 1 : 0
+  count               = var.separated == true && var.instance != null ? 1 : 0
   name                = "${var.name}-SeparatedPolicy"
-  compute_cluster_id  = "${data.vsphere_compute_cluster.cluster[0].id}"
+  compute_cluster_id  = data.vsphere_compute_cluster.cluster[0].id
   virtual_machine_ids = vsphere_virtual_machine.vm[*].id
   depends_on = [vsphere_virtual_machine.vm]
 }
