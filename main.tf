@@ -53,7 +53,7 @@ locals {
 
 # UPDATE VMs
 resource "vsphere_virtual_machine" "vm" {
-  count            = var.instance != null ? var.instance : 1
+  count            = var.instance
   name             = "${var.name}${count.index + 1}"
   resource_pool_id = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
   annotation       = var.annotation

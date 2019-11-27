@@ -34,7 +34,7 @@ variable "annotation" {
 variable "instance" {
   description = "Number of instance to deploy of same specs"
   type        = number
-  default     = null
+  default     = 1
 }
 
 variable "separated" {
