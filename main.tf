@@ -49,27 +49,29 @@ data "vsphere_network" "network" {
 
 locals {
   template_disk_count = length(data.vsphere_virtual_machine.template.disks)
+  hostname        = var.hostname != null ? var.hostname : var.name
 }
 
 # UPDATE VMs
 resource "vsphere_virtual_machine" "vm" {
-  name                      = var.name
-  resource_pool_id          = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
-  annotation                = var.annotation
+  count            = var.instance
+  name             = var.instance  != 1 ? "${var.name}${count.index + var.starting_index}" : var.name
+  resource_pool_id = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
+  annotation       = var.annotation
 
-  datastore_id              = var.datastore == null ? null : data.vsphere_datastore.datastore[0].id
-  datastore_cluster_id      = var.datastore != null ? null : data.vsphere_datastore_cluster.datastore_cluster[0].id
+  datastore_id         = var.datastore == null ? null : data.vsphere_datastore.datastore[0].id
+  datastore_cluster_id = var.datastore != null ? null : data.vsphere_datastore_cluster.datastore_cluster[0].id
 
-  num_cpus                  = var.num_cpus
-  num_cores_per_socket      = var.num_cores_per_socket
-  cpu_hot_add_enabled       = var.cpu_hot_add_enabled
-  cpu_hot_remove_enabled    = var.cpu_hot_remove_enabled
-  memory                    = var.memory
-  memory_hot_add_enabled    = var.memory_hot_add_enabled
-  
-  guest_id                  = data.vsphere_virtual_machine.template.guest_id
+  num_cpus               = var.num_cpus
+  num_cores_per_socket   = var.num_cores_per_socket
+  cpu_hot_add_enabled    = var.cpu_hot_add_enabled
+  cpu_hot_remove_enabled = var.cpu_hot_remove_enabled
+  memory                 = var.memory
+  memory_hot_add_enabled = var.memory_hot_add_enabled
 
-  scsi_type                 = var.scsi_type != null ? var.scsi_type : data.vsphere_virtual_machine.template.scsi_type
+  guest_id = data.vsphere_virtual_machine.template.guest_id
+
+  scsi_type = var.scsi_type != null ? var.scsi_type : data.vsphere_virtual_machine.template.scsi_type
 
   dynamic "network_interface" {
     for_each = var.networking.interfaces
@@ -81,11 +83,11 @@ resource "vsphere_virtual_machine" "vm" {
 
   // Disks defined in the original template
   disk {
-      label            = "disk0"
-      size             = var.boot_disk_size != null ? var.boot_disk_size : data.vsphere_virtual_machine.template.disks[0].size
-      unit_number      = 0
-      thin_provisioned = data.vsphere_virtual_machine.template.disks[0].thin_provisioned
-      eagerly_scrub    = data.vsphere_virtual_machine.template.disks[0].eagerly_scrub
+    label            = "disk0"
+    size             = var.boot_disk_size != null ? var.boot_disk_size : data.vsphere_virtual_machine.template.disks[0].size
+    unit_number      = 0
+    thin_provisioned = data.vsphere_virtual_machine.template.disks[0].thin_provisioned
+    eagerly_scrub    = data.vsphere_virtual_machine.template.disks[0].eagerly_scrub
   }
 
   // Additional disks defined by Terraform config
@@ -93,12 +95,12 @@ resource "vsphere_virtual_machine" "vm" {
     for_each = var.additionnal_storage
     iterator = terraform_disks
     content {
-      label             = var.additionnal_storage[terraform_disks.key].label != null ? var.additionnal_storage[terraform_disks.key].label : "disk${terraform_disks.key + local.template_disk_count}"
-      size              = var.additionnal_storage[terraform_disks.key].size
-      unit_number       = terraform_disks.key + local.template_disk_count
-      datastore_id      = data.vsphere_datastore.datastore_storage[terraform_disks.key].id
-      thin_provisioned  = var.additionnal_storage[terraform_disks.key].thin_provisioned != null ? var.additionnal_storage[terraform_disks.key].thin_provisioned : false
-      eagerly_scrub     = var.additionnal_storage[terraform_disks.key].eagerly_scrub != null ? var.additionnal_storage[terraform_disks.key].eagerly_scrub : false
+      label            = var.additionnal_storage[terraform_disks.key].label != null ? var.additionnal_storage[terraform_disks.key].label : "disk${terraform_disks.key + local.template_disk_count}"
+      size             = var.additionnal_storage[terraform_disks.key].size
+      unit_number      = terraform_disks.key + local.template_disk_count
+      datastore_id     = data.vsphere_datastore.datastore_storage[terraform_disks.key].id
+      thin_provisioned = var.additionnal_storage[terraform_disks.key].thin_provisioned != null ? var.additionnal_storage[terraform_disks.key].thin_provisioned : false
+      eagerly_scrub    = var.additionnal_storage[terraform_disks.key].eagerly_scrub != null ? var.additionnal_storage[terraform_disks.key].eagerly_scrub : false
     }
   }
 
@@ -107,19 +109,19 @@ resource "vsphere_virtual_machine" "vm" {
 
     customize {
       linux_options {
-        host_name = var.hostname != null ? var.hostname : var.name
+        host_name = var.instance  != 1 ? "${local.hostname}${count.index + var.starting_index}" : local.hostname
         domain    = var.domain
       }
-      
+
       dynamic "network_interface" {
         for_each = var.networking.interfaces
         content {
-          ipv4_address = var.networking.interfaces[network_interface.key].ipv4_address
+          ipv4_address = var.networking.interfaces[network_interface.key].ipv4_address[count.index]
           ipv4_netmask = var.networking.interfaces[network_interface.key].ipv4_netmask
         }
       }
 
-      ipv4_gateway = var.networking.gateway
+      ipv4_gateway    = var.networking.gateway
       dns_server_list = var.nameservers
     }
   }
@@ -133,7 +135,7 @@ resource "vsphere_virtual_machine" "vm" {
       type     = "ssh"
       user     = var.ssh_user
       password = var.ssh_password
-      host     = var.networking.interfaces[0].ipv4_address
+      host     = var.networking.interfaces[0].ipv4_address[count.index]
     }
 
   }
@@ -145,7 +147,7 @@ resource "vsphere_virtual_machine" "vm" {
       type     = "ssh"
       user     = var.ssh_user
       password = var.ssh_password
-      host     = var.networking.interfaces[0].ipv4_address
+      host     = var.networking.interfaces[0].ipv4_address[count.index]
     }
 
     inline = [
@@ -154,4 +156,12 @@ resource "vsphere_virtual_machine" "vm" {
       "sudo shutdown -r",
     ]
   }
+}
+
+resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule" {
+  count               = var.separated == true && var.instance != null ? 1 : 0
+  name                = "${var.name}-SeparatedPolicy"
+  compute_cluster_id  = data.vsphere_compute_cluster.cluster[0].id
+  virtual_machine_ids = vsphere_virtual_machine.vm[*].id
+  depends_on = [vsphere_virtual_machine.vm]
 }

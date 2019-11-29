@@ -31,6 +31,24 @@ variable "annotation" {
   default     = "Managed by Terraform. NEVER EDIT THE VM MANUALY!"
 }
 
+variable "instance" {
+  description = "Number of instance to deploy of same specs"
+  type        = number
+  default     = 1
+}
+
+variable "separated" {
+  description = "Tell if the set of instances needs to be separated accros host"
+  type        = bool
+  default     = false
+}
+
+variable "starting_index" {
+  description = "Starting index for vm name and hostname labelling"
+  type        = number
+  default     = 1
+}
+
 # RESOURCES VARIABLES
 
 variable "datastore" {
@@ -114,7 +132,7 @@ variable "networking" {
       interfaces    = list(object({
           name          = string
           portgroup     = string
-          ipv4_address  = string
+          ipv4_address  = list(string)
           ipv4_netmask  = number
       }))
     })
