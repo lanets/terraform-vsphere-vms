@@ -43,6 +43,12 @@ variable "separated" {
   default     = false
 }
 
+variable "starting_index" {
+  description = "Starting index for vm name and hostname labelling"
+  type        = number
+  default     = 1
+}
+
 # RESOURCES VARIABLES
 
 variable "datastore" {

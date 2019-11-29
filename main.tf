@@ -49,12 +49,13 @@ data "vsphere_network" "network" {
 
 locals {
   template_disk_count = length(data.vsphere_virtual_machine.template.disks)
+  hostname        = var.hostname != null ? var.hostname : var.name
 }
 
 # UPDATE VMs
 resource "vsphere_virtual_machine" "vm" {
   count            = var.instance
-  name             = "${var.name}${count.index + 1}"
+  name             = var.instance  != 1 ? "${var.name}${count.index + var.starting_index}" : var.name
   resource_pool_id = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
   annotation       = var.annotation
 
@@ -108,7 +109,7 @@ resource "vsphere_virtual_machine" "vm" {
 
     customize {
       linux_options {
-        host_name = var.hostname != null ? "${var.hostname}${count.index + 1}" : "${var.name}${count.index + 1}"
+        host_name = var.instance  != 1 ? "${local.hostname}${count.index + var.starting_index}" : local.hostname
         domain    = var.domain
       }
 
