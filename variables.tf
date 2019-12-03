@@ -16,13 +16,19 @@ variable "template" {
   description = "Name of the template available in the vSphere"
 }
 
+variable "folder" {
+  description = "Name of the folder where you want available in the vSphere"
+  type        = string
+  default     = null
+}
+
 variable "ssh_user" {
   description = "Username to connect to ssh"
   type        = string
 }
 
 variable "ssh_password" {
-  description = "Datastore to deploy the VM (With DRS only!)."
+  description = "Password to connect to ssh"
    type        = string
 }
 

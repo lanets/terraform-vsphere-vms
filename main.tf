@@ -47,6 +47,14 @@ data "vsphere_network" "network" {
   datacenter_id = data.vsphere_datacenter.datacenter.id
 }
 
+# Create folder if needed
+resource "vsphere_folder" "vm_folder" {
+  count         = var.folder != null ? 1 : 0
+  path          = var.folder
+  type          = "vm"
+  datacenter_id = data.vsphere_datacenter.datacenter.id
+}
+
 locals {
   template_disk_count = length(data.vsphere_virtual_machine.template.disks)
   hostname        = var.hostname != null ? var.hostname : var.name
@@ -54,10 +62,12 @@ locals {
 
 # UPDATE VMs
 resource "vsphere_virtual_machine" "vm" {
-  count            = var.instance
-  name             = var.instance  != 1 ? "${var.name}${count.index + var.starting_index}" : var.name
-  resource_pool_id = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
-  annotation       = var.annotation
+  folder                = var.folder != null ? var.folder : null
+
+  count                 = var.instance
+  name                  = var.instance  != 1 ? "${var.name}${count.index + var.starting_index}" : var.name
+  resource_pool_id      = var.resource_pool != null ? data.vsphere_resource_pool.resource_pool[0].id : data.vsphere_compute_cluster.cluster[0].resource_pool_id
+  annotation            = var.annotation
 
   datastore_id         = var.datastore == null ? null : data.vsphere_datastore.datastore[0].id
   datastore_cluster_id = var.datastore != null ? null : data.vsphere_datastore_cluster.datastore_cluster[0].id
