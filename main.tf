@@ -47,14 +47,6 @@ data "vsphere_network" "network" {
   datacenter_id = data.vsphere_datacenter.datacenter.id
 }
 
-# Create folder if needed
-resource "vsphere_folder" "vm_folder" {
-  count         = var.folder != null ? 1 : 0
-  path          = var.folder
-  type          = "vm"
-  datacenter_id = data.vsphere_datacenter.datacenter.id
-}
-
 locals {
   template_disk_count = length(data.vsphere_virtual_machine.template.disks)
   hostname        = var.hostname != null ? var.hostname : var.name
@@ -166,7 +158,6 @@ resource "vsphere_virtual_machine" "vm" {
       "sudo shutdown -r",
     ]
   }
-  depends_on = [vsphere_folder.vm_folder]
 }
 
 resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule" {
