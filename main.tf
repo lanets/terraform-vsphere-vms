@@ -166,6 +166,7 @@ resource "vsphere_virtual_machine" "vm" {
       "sudo shutdown -r",
     ]
   }
+  depends_on = [vsphere_folder.vm_folder]
 }
 
 resource "vsphere_compute_cluster_vm_anti_affinity_rule" "cluster_vm_anti_affinity_rule" {
