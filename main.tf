@@ -141,7 +141,6 @@ resource "vsphere_virtual_machine" "vm" {
     }
 
   }
-
   # Extend system partition
   provisioner "remote-exec" {
 
@@ -157,6 +156,18 @@ resource "vsphere_virtual_machine" "vm" {
       "echo 'y' | sudo /tmp/partresize.sh -p /dev/sda5 -l -f",
       "sudo shutdown -r",
     ]
+  }
+  # Execute custom provisioning commands
+  provisioner "remote-exec" {
+
+    connection {
+      type     = "ssh"
+      user     = var.ssh_user
+      password = var.ssh_password
+      host     = var.networking.interfaces[0].ipv4_address[count.index]
+    }
+
+    inline = var.after_commands
   }
 }
 

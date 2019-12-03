@@ -55,6 +55,12 @@ variable "starting_index" {
   default     = 1
 }
 
+variable "after_commands" {
+  description = "List of commands to run after vm creation"
+  type        = list(string)
+  default     = ["echo 'No additionnals commands passed during provisionning'"]
+}
+
 # RESOURCES VARIABLES
 
 variable "datastore" {
