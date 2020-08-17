@@ -74,6 +74,7 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id = data.vsphere_virtual_machine.template.guest_id
 
   scsi_type = var.scsi_type != null ? var.scsi_type : data.vsphere_virtual_machine.template.scsi_type
+  firmware = var.firmware != null ? var.firmware : data.vsphere_virtual_machine.template.firmware
 
   dynamic "network_interface" {
     for_each = var.networking.interfaces

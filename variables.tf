@@ -118,6 +118,12 @@ variable "scsi_type" {
   default     = null
 }
 
+variable "firmware" {
+  description = "Bios or UEFI boot."
+  type        = string
+  default     = null
+}
+
 # NETWORKING VARIABLES
 
 variable "hostname" {
